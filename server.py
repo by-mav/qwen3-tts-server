@@ -496,33 +496,11 @@ def _generate_audio_sync(text: str, voice_id: str, instruct: str | None, languag
     return wavs[0], sr
 
 
-def _fix_zero_stuffed_audio(wav: np.ndarray, sr: int) -> tuple:
-    """Detect and fix zero-stuffed audio from faster-qwen3-tts v0.3.0.
-
-    The faster-qwen3-tts codec decoder outputs 12 kHz audio but reports
-    24 kHz, stuffing every other sample with zero.  This corrupts downstream
-    consumers (ASR, media players).  When detected, we remove the zero
-    samples and properly upsample from 12 kHz to 24 kHz.
-    """
-    if sr != 24000 or wav.size < 4:
-        return wav, sr
-    if np.any(wav[::2]):
-        return wav, sr
-    wav_12k = wav[1::2].copy().astype(np.float64)
-    n_12k = len(wav_12k)
-    x_old = np.linspace(0, n_12k - 1, n_12k)
-    x_new = np.linspace(0, n_12k - 1, n_12k * 2)
-    wav_24k = np.interp(x_new, x_old, wav_12k).astype(wav.dtype)
-    logger.info(
-        "Fixed zero-stuffed audio: %d samples @ 12 kHz to %d samples @ 24 kHz",
-        n_12k, len(wav_24k),
-    )
-    return wav_24k, 24000
-
-
 def _wav_to_bytes_sync(wav: np.ndarray, sr: int, fmt: str) -> bytes:
     """Encode WAV array to the requested format — call via asyncio.to_thread."""
-    wav, sr = _fix_zero_stuffed_audio(wav, sr)
+    # faster-qwen3-tts returns float32 audio; wave.open expects int16 PCM.
+    if wav.dtype == np.float32 or wav.dtype == np.float64:
+        wav = np.clip(wav * 32767, -32768, 32767).astype(np.int16)
     buf = io.BytesIO()
     sf.write(buf, wav, sr, format="WAV")
     wav_bytes = buf.getvalue()
