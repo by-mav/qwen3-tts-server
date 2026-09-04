@@ -1,0 +1,42 @@
+# Aplicacao Coolify (build pack: Docker Compose) - server MONSTRO, RTX 5090 #1 (gpu1), ao lado do NInfer.
+# O NInfer deixa ~6,5 GB livres na gpu1 (--kv-capacity 114688 em by-mav/ninfer). O modelo
+# (Qwen3-TTS 1.7B Base, ~3 GB) baixa do HuggingFace na primeira subida, para o volume de cache.
+# Nao ha pull de imagem: o Coolify CONSTROI o Containerfile aqui (base nvidia/cuda do Docker Hub).
+# gpus (nao deploy.resources): o caminho deploy e ignorado pelo compose up do Coolify no WSL2.
+# CUDA_VISIBLE_DEVICES + PCI_BUS_ID fixam a placa fisica (device_ids nao filtra /dev/dxg no WSL2).
+services:
+  qwen3-tts:
+    build:
+      context: .
+      dockerfile: Containerfile
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8092:8001"
+    gpus:
+      - device_ids: ["1"]
+        capabilities: [gpu]
+    environment:
+      CUDA_DEVICE_ORDER: PCI_BUS_ID
+      CUDA_VISIBLE_DEVICES: "1"
+      HF_HOME: /root/.cache/huggingface
+      QWEN3_TTS_VOICES_DIR: /data/voices
+      QWEN_API_KEY: ${TTS_VITA_API_KEY}
+    volumes:
+      - qwen3-tts-hf-cache:/root/.cache/huggingface
+      - qwen3-tts-voices:/data/voices
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 600s
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  qwen3-tts-hf-cache:
+  qwen3-tts-voices:
