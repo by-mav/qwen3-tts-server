@@ -1,0 +1,49 @@
+version: 2
+
+# O Dependabot so' enxerga manifesto declarado. Este repo tem pyproject.toml,
+# um Containerfile, dois composes e um workflow — nada disso era vigiado.
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: daily
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    assignees: [rafamav]
+    groups:
+      python-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: daily
+      time: "06:10"
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    assignees: [rafamav]
+    groups:
+      compose-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: "06:20"
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    assignees: [rafamav]
+    groups:
+      actions-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
