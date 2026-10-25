@@ -17,7 +17,7 @@ jobs:
   # Smoke tests (no GPU, no model load) — run on every push/PR
   # ------------------------------------------------------------------
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, monstrinho]
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
   # Container build + push to GHCR
   # ------------------------------------------------------------------
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, monstrinho]
     needs: test
     permissions:
       contents: read
@@ -128,3 +128,17 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
           category: trivy-container
+
+      # The CUDA/PyTorch image is multi-GB and this runner keeps its disk.
+      # Drop BuildKit cache, the scanned image, and dangling leftovers.
+      - name: Free Docker disk
+        if: always()
+        run: |
+          image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          digest="${{ steps.build.outputs.digest }}"
+          if [ -n "$digest" ]; then
+            docker image rm "${image}@${digest}" || true
+          fi
+          docker builder prune --all --force
+          docker image prune --force
+          docker container prune --force
