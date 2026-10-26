@@ -92,7 +92,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Cache export to the Actions cache returns HTTP 400 on this
+          # runner. Keep the build when that export fails.
+          cache-to: type=gha,mode=max,ignore-error=true
           # SBOM (SPDX) + SLSA build provenance as in-toto attestations on GHCR.
           # Inspect with:
           #   docker buildx imagetools inspect \
