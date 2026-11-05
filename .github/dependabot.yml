@@ -14,9 +14,8 @@ updates:
       docker-compose-minor-patch:
         patterns: ["*"]
         update-types: [minor, patch]
-  # Coolify build usa Containerfile (não Dockerfile). Dependabot docker só
-  # detecta Dockerfile*; quando existir Dockerfile na raiz, este bloco passa a
-  # emitir PRs. Mantido para completar a cobertura pedida.
+  # Coolify build usa Containerfile; o ecossistema docker do Dependabot
+  # reconhece Dockerfile e Containerfile (dependabot-core docker file_fetcher).
   - package-ecosystem: docker
     directories:
       - /
