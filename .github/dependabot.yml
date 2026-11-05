@@ -9,13 +9,27 @@ updates:
       time: "06:00"
       timezone: America/Sao_Paulo
     open-pull-requests-limit: 5
+    assignees: [rafamav]
     groups:
       docker-compose-minor-patch:
-        patterns:
-          - '*'
-        update-types:
-          - minor
-          - patch
+        patterns: ["*"]
+        update-types: [minor, patch]
+  # Coolify build usa Containerfile; o ecossistema docker do Dependabot
+  # reconhece Dockerfile e Containerfile (dependabot-core docker file_fetcher).
+  - package-ecosystem: docker
+    directories:
+      - /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    assignees: [rafamav]
+    groups:
+      docker-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
   - package-ecosystem: github-actions
     directories:
       - /
@@ -25,13 +39,11 @@ updates:
       time: "06:00"
       timezone: America/Sao_Paulo
     open-pull-requests-limit: 5
+    assignees: [rafamav]
     groups:
       github-actions-minor-patch:
-        patterns:
-          - '*'
-        update-types:
-          - minor
-          - patch
+        patterns: ["*"]
+        update-types: [minor, patch]
   - package-ecosystem: pip
     directories:
       - /
@@ -41,10 +53,8 @@ updates:
       time: "06:00"
       timezone: America/Sao_Paulo
     open-pull-requests-limit: 5
+    assignees: [rafamav]
     groups:
       pip-minor-patch:
-        patterns:
-          - '*'
-        update-types:
-          - minor
-          - patch
+        patterns: ["*"]
+        update-types: [minor, patch]
